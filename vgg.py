@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 class VGG16(nn.Module):
-    def __init__(self, number_of_classes=8):
+    def __init__(self, number_of_classes=4):
         super(VGG16, self).__init__()
         
         self.features = nn.Sequential(
@@ -53,7 +53,7 @@ class VGG16(nn.Module):
             nn.Linear(4096, 4096),
             nn.ReLU(inplace=True),
             nn.Dropout(p=0.5),
-            nn.Linear(4096, number_of_classes) # defeault is 8 for the pet emotions dataset
+            nn.Linear(4096, number_of_classes) # defeault is 4 for the pet emotions dataset
         )
 
     def forward(self, x):
