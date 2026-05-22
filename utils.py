@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Optional
 
 import numpy as np
 import torch
+import torch.nn as nn
 
 def plot_loss_and_accuracy(train_losses, val_losses, train_accuracies, val_accuracies):
     plt.figure(figsize=(12, 5))
@@ -23,6 +24,55 @@ def plot_loss_and_accuracy(train_losses, val_losses, train_accuracies, val_accur
     plt.tight_layout()
     plt.show()
 
+
+def train_one_epoch(model, train_loader, optimizer, device):
+    model.train()
+    running_loss = 0.0
+    correct = 0
+    total = 0
+
+    for batch_idx, (inputs, targets) in enumerate(train_loader):
+        inputs, targets = inputs.to(device), targets.to(device)
+
+        optimizer.zero_grad()
+        outputs = model(inputs)
+        criterion = nn.CrossEntropyLoss()
+        loss = criterion(outputs, targets)
+        loss.backward()
+        optimizer.step()
+
+        running_loss += loss.item()
+        _, predicted = outputs.max(1)
+        total += targets.size(0)
+        correct += predicted.eq(targets).sum().item()
+
+    epoch_loss = running_loss / len(train_loader)
+    epoch_acc = 100. * correct / total
+    return epoch_loss, epoch_acc
+
+@torch.no_grad()
+def evaluate_one_epoch(model, test_loader, device):
+    model.eval()
+    running_loss = 0.0
+    correct = 0
+    total = 0
+
+    with torch.no_grad():
+        for batch_idx, (inputs, targets) in enumerate(test_loader):
+            inputs, targets = inputs.to(device), targets.to(device)
+
+            outputs = model(inputs)
+            criterion = nn.CrossEntropyLoss()
+            loss = criterion(outputs, targets)
+
+            running_loss += loss.item()
+            _, predicted = outputs.max(1)
+            total += targets.size(0)
+            correct += predicted.eq(targets).sum().item()
+
+    epoch_loss = running_loss / len(test_loader)
+    epoch_acc = 100. * correct / total
+    return epoch_loss, epoch_acc
 
 @torch.no_grad()
 def report_classification_metrics(
